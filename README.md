@@ -91,3 +91,13 @@ This section has moved here: [https://facebook.github.io/create-react-app/docs/t
 
 ## Credit and Collaborations
 <!-- Give credit (and a link) to other people or resources that helped you build this application. -->
+
+Name of feature: ________geolocation________________________
+
+Estimate of time needed to complete: __2 hours___
+
+Start time: __6pm___
+
+Finish time: ___11pm__
+
+Actual time needed to complete: ___n/a__

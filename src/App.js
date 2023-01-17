@@ -2,6 +2,7 @@
 import React from 'react';
 import './App.css';
 import axios from 'axios';
+import { toHaveAccessibleDescription, toHaveStyle } from '@testing-library/jest-dom/dist/matchers';
 
 
 class App extends React.Component{
@@ -11,7 +12,9 @@ class App extends React.Component{
       city: '',
       cityData: [],
       error: false,
-      errorMessage: ''
+      errorMessage: '',
+      lat: '',
+      lon:'',
     }
   }
 
@@ -37,13 +40,17 @@ class App extends React.Component{
 
       console.log(url);
       let cityDataFromAxios = await axios.get(url)
-      // console.log(cityDataFromAxios.data)
+      console.log(cityDataFromAxios.data[0])
       // TODO: save that data to state
       this.setState({
         cityData: cityDataFromAxios.data[0],
+        lon: cityDataFromAxios.data[0].lon,
+        lat: cityDataFromAxios.data[0].lat,
         error: false
+      },()=> {
+        console.log(cityDataFromAxios)
       })
-
+      console.log(cityDataFromAxios.data)
 
       //  *** FOR YOUR LAB YOU WILL NEED TO GET A MAP IMAGE SRC. Example: ***
     // ** `https://maps.locationiq.com/v3/staticmap?key=${process.env.REACT_APP_CITY_EXPLORER_KEY}&center=47.6038321,-122.3300624&zoom=10`
@@ -59,6 +66,7 @@ class App extends React.Component{
   }
 
   render(){
+    console.log(this.state)
     return(
       <>
         <h1>API Calls</h1>
@@ -70,13 +78,16 @@ class App extends React.Component{
           </label>
 
         </form>
-
+        <Map img_url={`https://maps.locationiq.com/v3/staticmap?key=${process.env.REACT_APP_CITY_EXPLORER_KEY}&center=${this.state.lat},${this.state.lon}x300&format=jpg&zoom=10`}
+        city={this.state.location}
+        />
 
         {/* Ternary - W ? T : F */}
         {
           this.state.error
           ? <p>{this.state.errorMessage}</p>
           : <p>{this.state.cityData.display_name},{this.state.cityData.lat},{this.state.cityData.lon}</p>
+
         
 
         }
@@ -86,3 +97,4 @@ class App extends React.Component{
 }
 
 export default App;
+
