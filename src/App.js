@@ -1,8 +1,11 @@
 
 import React from 'react';
-import './App.css';
+import '../src/App.css';
 import axios from 'axios';
-import Carousel from 'react-bootstrap/Carousel';
+// import Carousel from 'react-bootstrap/Carousel';
+import Card from 'react-bootstrap/Card'
+import Button from 'react-bootstrap/Button';
+import Weather from './weather';
 
 
 
@@ -18,6 +21,8 @@ class App extends React.Component {
       errorMessage: '',
       lat: '',
       lon: '',
+      weatherData:[],
+      
 
     }
   }
@@ -46,6 +51,7 @@ class App extends React.Component {
       console.log(cityDataFromAxios.data[0])
       let lat = cityDataFromAxios.data[0].lat;
       let lon = cityDataFromAxios.data[0].lon;
+      console.log(lat,lon)
       // TODO: save that data to state
       this.setState({
         cityData: cityDataFromAxios.data[0],
@@ -56,6 +62,8 @@ class App extends React.Component {
         console.log(cityDataFromAxios)
       })
       console.log(cityDataFromAxios.data)
+      this.handleGetWeather(lat,lon);
+      this.handleGetMovie();
 
       //  *** FOR YOUR LAB YOU WILL NEED TO GET A MAP IMAGE SRC. Example: ***
       // ** `https://maps.locationiq.com/v3/staticmap?key=${process.env.REACT_APP_CITY_EXPLORER_KEY}&center=47.6038321,-122.3300624&zoom=10`
@@ -74,7 +82,8 @@ class App extends React.Component {
   handleGetWeather = async (lat, lon) => {
     try {
       //TODO: build url
-      let url = `${process.env.REACT_APP_SERVER}/weather?lat=${lat}&lon=${lon}&`
+      let url = `${process.env.REACT_APP_SERVER}/weather?searchQuery=${this.state.city}&lat=${lat}&lon=${lon}`
+      console.log(url)
       //TODO: use axios to hit my server
       let weatherDataFromAxios = await axios.get(url);
       //TODO: Save that weather data to state
@@ -82,6 +91,7 @@ class App extends React.Component {
         error: false,
         weatherData: weatherDataFromAxios.data
       });
+      console.log(this.state.weatherData);
 
 
     } catch (error) {
@@ -92,12 +102,30 @@ class App extends React.Component {
       })
     }
   }
+  
+  handleGetMovie = async () => {
+    try{
+
+      let url = `http://localhost:3001/movie?cityName=Seattle`
+      let movieDatafromAxios = await axios.get(url);
+      console.log(movieDatafromAxios)
+
+      this.setState({
+        error:false,
+        movieDaTa: movieDatafromAxios.results,
+      })
+
+    } catch (error) {
+      console.log(error)
+
+    }
+  }
 
   render() {
     console.log(this.state)
     return (
       <>
-        <h1>API Calls</h1>
+        <h3>API Calls</h3>
 
         <form onSubmit={this.getCityData}>
           <label htmlFor=""> Please Choose a City!
@@ -108,40 +136,32 @@ class App extends React.Component {
         </form>
 
         {/* Ternary - W ? T : F */}
-        {
-          this.state.error}
-               <Carousel fade>
-            ?  <Carousel.Item>
-                <h1> Error. Sorry.</h1>
-                <p>{this.state.errorMessage}</p>
 
-                <Carousel.Caption>
-                  <p>Nulla vitae elit libero, a pharetra augue mollis interdum.</p>
-                </Carousel.Caption>
-              </Carousel.Item>
-           : <Carousel.Item>
-                <p>{this.state.cityData.display_name}</p>
-                <img
+        {this.state.error
+
+
+          ? <Card.Text>
+            {/* <h1> Error. Sorry.</h1> */}
+            {this.state.errorMessage}
+          </Card.Text>
+          :
+          <Card style={{ width: '18rem' }}>
+            <Card.Body>
+              <Card.Title>{this.state.cityData.display_name}</Card.Title>
+              <Card.Text>
+                <Card.Img
                   className="map"
                   src={this.state.cityMap}
-                  alt="mapimage"
                 />
-                <p>{this.state.cityData.lon}</p>
-                <p>{this.state.cityData.lat}</p>
+                Longitude:{this.state.cityData.lon}
+                <br></br>Latitude:{this.state.cityData.lat}
+                <Weather weatherData={this.state.weatherData}/>
+              </Card.Text>
+            </Card.Body>
+          </Card>
+        }
 
-                <img
-                  className="d-block w-100"
-                  src="holder.js/800x400?text=Second slide&bg=282c34"
-                  alt="Second slide"
-                />
-                <Carousel.Caption>
-                  <h3>Second slide label</h3>
-                  <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit.</p>
-                </Carousel.Caption>
-              </Carousel.Item>
-            </Carousel>
 
-        
       </>
     )
   }
