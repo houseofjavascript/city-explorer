@@ -1,12 +1,18 @@
 
 import React from 'react';
-import './App.css';
+import '../src/App.css';
 import axios from 'axios';
-import { toHaveAccessibleDescription, toHaveStyle } from '@testing-library/jest-dom/dist/matchers';
+// import Carousel from 'react-bootstrap/Carousel';
+import Card from 'react-bootstrap/Card'
+import Button from 'react-bootstrap/Button';
+import Weather from './weather';
 
 
-class App extends React.Component{
-  constructor(props){
+
+
+
+class App extends React.Component {
+  constructor(props) {
     super(props);
     this.state = {
       city: '',
@@ -14,7 +20,10 @@ class App extends React.Component{
       error: false,
       errorMessage: '',
       lat: '',
-      lon:'',
+      lon: '',
+      weatherData:[],
+      
+
     }
   }
 
@@ -36,24 +45,28 @@ class App extends React.Component{
 
     try {
       // TODO: need use axios to hit LocationIQ - async/await
-      let url = `https://us1.locationiq.com/v1/search?key=${process.env.REACT_APP_CITY_EXPLORER_KEY}&q=${this.state.city}&format=json`
+      let url = `https://us1.locationiq.com/v1/search?key=${process.env.REACT_APP_CITY_EXPLORER_KEY}&q=${this.state.city}&format=json&limit=1`
 
-      console.log(url);
       let cityDataFromAxios = await axios.get(url)
       console.log(cityDataFromAxios.data[0])
+      let lat = cityDataFromAxios.data[0].lat;
+      let lon = cityDataFromAxios.data[0].lon;
+      console.log(lat,lon)
       // TODO: save that data to state
       this.setState({
         cityData: cityDataFromAxios.data[0],
-        lon: cityDataFromAxios.data[0].lon,
-        lat: cityDataFromAxios.data[0].lat,
-        error: false
-      },()=> {
+        error: false,
+        cityMap: `https://maps.locationiq.com/v3/staticmap?key=${process.env.REACT_APP_CITY_EXPLORER_KEY}&center=${cityDataFromAxios.data[0].lat},${cityDataFromAxios.data[0].lon}&zoom=10`,
+
+      }, () => {
         console.log(cityDataFromAxios)
       })
       console.log(cityDataFromAxios.data)
+      this.handleGetWeather(lat,lon);
+      this.handleGetMovie();
 
       //  *** FOR YOUR LAB YOU WILL NEED TO GET A MAP IMAGE SRC. Example: ***
-    // ** `https://maps.locationiq.com/v3/staticmap?key=${process.env.REACT_APP_CITY_EXPLORER_KEY}&center=47.6038321,-122.3300624&zoom=10`
+      // ** `https://maps.locationiq.com/v3/staticmap?key=${process.env.REACT_APP_CITY_EXPLORER_KEY}&center=47.6038321,-122.3300624&zoom=10`
 
     } catch (error) {
       console.log(error);
@@ -64,12 +77,55 @@ class App extends React.Component{
     }
 
   }
+  //TODO : DEfine a weather handler to retrive data from backend
+  //pass data into parameters
+  handleGetWeather = async (lat, lon) => {
+    try {
+      //TODO: build url
+      let url = `${process.env.REACT_APP_SERVER}/weather?searchQuery=${this.state.city}&lat=${lat}&lon=${lon}`
+      console.log(url)
+      //TODO: use axios to hit my server
+      let weatherDataFromAxios = await axios.get(url);
+      //TODO: Save that weather data to state
+      this.setState({
+        error: false,
+        weatherData: weatherDataFromAxios.data
+      });
+      console.log(this.state.weatherData);
 
-  render(){
+
+    } catch (error) {
+      console.log(error.message);
+      this.setState({
+        error: true,
+        errorMessage: error.message
+      })
+    }
+  }
+  
+  handleGetMovie = async () => {
+    try{
+
+      let url = `http://localhost:3001/movie?cityName=Seattle`
+      let movieDatafromAxios = await axios.get(url);
+      console.log(movieDatafromAxios)
+
+      this.setState({
+        error:false,
+        movieDaTa: movieDatafromAxios.results,
+      })
+
+    } catch (error) {
+      console.log(error)
+
+    }
+  }
+
+  render() {
     console.log(this.state)
-    return(
+    return (
       <>
-        <h1>API Calls</h1>
+        <h3>API Calls</h3>
 
         <form onSubmit={this.getCityData}>
           <label htmlFor=""> Please Choose a City!
@@ -78,23 +134,40 @@ class App extends React.Component{
           </label>
 
         </form>
-        <Map img_url={`https://maps.locationiq.com/v3/staticmap?key=${process.env.REACT_APP_CITY_EXPLORER_KEY}&center=${this.state.lat},${this.state.lon}x300&format=jpg&zoom=10`}
-        city={this.state.location}
-        />
 
         {/* Ternary - W ? T : F */}
-        {
-          this.state.error
-          ? <p>{this.state.errorMessage}</p>
-          : <p>{this.state.cityData.display_name},{this.state.cityData.lat},{this.state.cityData.lon}</p>
 
-        
+        {this.state.error
 
+
+          ? <Card.Text>
+            {/* <h1> Error. Sorry.</h1> */}
+            {this.state.errorMessage}
+          </Card.Text>
+          :
+          <Card style={{ width: '18rem' }}>
+            <Card.Body>
+              <Card.Title>{this.state.cityData.display_name}</Card.Title>
+              <Card.Text>
+                <Card.Img
+                  className="map"
+                  src={this.state.cityMap}
+                />
+                Longitude:{this.state.cityData.lon}
+                <br></br>Latitude:{this.state.cityData.lat}
+                <Weather weatherData={this.state.weatherData}/>
+              </Card.Text>
+            </Card.Body>
+          </Card>
         }
+
+
       </>
     )
   }
 }
+
+
 
 export default App;
 
