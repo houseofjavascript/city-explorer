@@ -1,11 +1,13 @@
 
 import React from 'react';
-import '../src/App.css';
+
+import './App.css';
 import axios from 'axios';
 // import Carousel from 'react-bootstrap/Carousel';
 import Card from 'react-bootstrap/Card'
-import Button from 'react-bootstrap/Button';
 import Weather from './weather';
+import Movies from './movies';
+
 
 
 
@@ -22,7 +24,8 @@ class App extends React.Component {
       lat: '',
       lon: '',
       weatherData:[],
-      
+      movieData:[],
+
 
     }
   }
@@ -89,7 +92,7 @@ class App extends React.Component {
       //TODO: Save that weather data to state
       this.setState({
         error: false,
-        weatherData: weatherDataFromAxios.data
+        weatherData: weatherDataFromAxios.data,
       });
       console.log(this.state.weatherData);
 
@@ -106,17 +109,21 @@ class App extends React.Component {
   handleGetMovie = async () => {
     try{
 
-      let url = `http://localhost:3001/movie?cityName=Seattle`
+      let url = `${process.env.REACT_APP_SERVER}/movie?searchQuery=${this.state.city}`
       let movieDatafromAxios = await axios.get(url);
-      console.log(movieDatafromAxios)
+      console.log('moviedata',movieDatafromAxios)
 
       this.setState({
         error:false,
-        movieDaTa: movieDatafromAxios.results,
+        movieData: movieDatafromAxios.data,
       })
 
     } catch (error) {
-      console.log(error)
+      console.log(error);
+      this.setState({
+        error:true,
+        errorMessage: error.message
+      })
 
     }
   }
@@ -153,9 +160,12 @@ class App extends React.Component {
                   className="map"
                   src={this.state.cityMap}
                 />
-                Longitude:{this.state.cityData.lon}
-                <br></br>Latitude:{this.state.cityData.lat}
+                {this.state.cityData.lon}
+                {this.state.cityData.lat}
+                <h3>5 Day Forecast</h3>
                 <Weather weatherData={this.state.weatherData}/>
+                <h3>Trending Movies</h3>
+                <Movies movieData={this.state.movieData}/>
               </Card.Text>
             </Card.Body>
           </Card>
